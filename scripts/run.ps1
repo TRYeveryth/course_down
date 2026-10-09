@@ -21,5 +21,10 @@ $entryFiles = @{
     catalog = 'download_catalog.py'; official = 'download_official.py'
     retry = 'retry_failed.py'; probe = 'probe.py'; verify = 'verify_downloads.py'
 }
-& $taskPython -u (Join-Path $projectDirectory $entryFiles[$Task]) @ScriptArgs
-exit $LASTEXITCODE
+Push-Location $projectDirectory
+try {
+    $moduleName = 'scripts.' + [System.IO.Path]::GetFileNameWithoutExtension($entryFiles[$Task])
+    & $taskPython -u -m $moduleName @ScriptArgs
+    $taskExitCode = $LASTEXITCODE
+} finally { Pop-Location }
+exit $taskExitCode

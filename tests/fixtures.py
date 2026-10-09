@@ -1,5 +1,5 @@
 """Reserved test domains; never point these fixtures at an actual learning site."""
-import common as settings
+from scripts import common as settings
 
 SITE_URL = 'https://learning.example.test'
 API_URL = 'https://api.learning.example.test'

@@ -3,10 +3,10 @@ import argparse
 import asyncio
 import hashlib
 import json
-from common import BASE
-from common import local_cdp_url
-import download_official
-import common as settings
+from .common import BASE
+from .common import local_cdp_url
+from . import download_official
+from . import common as settings
 
 
 def failed_courses(courses, report):
@@ -45,7 +45,7 @@ async def main(argv=None,existing_session=None):
         manifest=json.loads((output/'catalog-courses.json').read_text(encoding='utf-8'))
         report=json.loads((output/'official-downloads.json').read_text(encoding='utf-8'))
     except FileNotFoundError as error:
-        raise RuntimeError('缺少目录清单或下载记录，请先运行 download_catalog.py') from error
+        raise RuntimeError('缺少目录清单或下载记录，请先运行 python -m scripts.download_catalog') from error
     courses,rows=failed_courses(manifest['courses'],report)
     pending_path=output/'retry-pending-courses.json'
     pending=json.loads(pending_path.read_text(encoding='utf-8')) if pending_path.exists() else []
@@ -74,7 +74,7 @@ async def main(argv=None,existing_session=None):
 
 if __name__=='__main__':
     try:
-        from common import download_run_lock
+        from .common import download_run_lock
         with download_run_lock(BASE/'output'):
             raise SystemExit(asyncio.run(main()))
     except KeyboardInterrupt:

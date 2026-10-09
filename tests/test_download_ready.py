@@ -4,7 +4,7 @@ import asyncio
 import unittest
 from playwright.async_api import async_playwright
 
-from download_official import wait_download_control
+from scripts.download_official import wait_download_control
 
 
 class DownloadReadinessTests(unittest.IsolatedAsyncioTestCase):

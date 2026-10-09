@@ -3,7 +3,7 @@
 # Paste the full directory URL, including its # fragment and query parameters.
 CATALOG_URL = ""
 
-# Optional: a single course URL used by download_official.py and probe.py.
+# Optional: a single course URL used by scripts.download_official and scripts.probe.
 COURSE_URL = ""
 
 # Optional: HTTPS origin only. Normally inferred from CATALOG_URL / COURSE_URL.

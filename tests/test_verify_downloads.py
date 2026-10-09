@@ -7,7 +7,7 @@ import unittest
 from pathlib import Path
 from unittest.mock import patch
 
-from verify_downloads import cleanup_temporary_copies, inspect_file, main
+from scripts.verify_downloads import cleanup_temporary_copies, inspect_file, main
 
 
 class TemporaryCleanupTests(unittest.TestCase):
@@ -33,7 +33,7 @@ class TemporaryCleanupTests(unittest.TestCase):
             (output/'official-downloads.json').write_text(json.dumps(report),encoding='utf-8')
             (output/'catalog-courses.json').write_text(json.dumps({'courses':courses}),encoding='utf-8')
             with patch('sys.argv',['verify_downloads','--output',str(output)]),\
-                 patch('verify_downloads.inspect_file',return_value={'bytes':7}):
+                 patch('scripts.verify_downloads.inspect_file',return_value={'bytes':7}):
                 self.assertEqual(main(),2)
             summary=json.loads((output/'download-verification.json').read_text(encoding='utf-8'))
             self.assertEqual(len(summary['files']),1)
@@ -50,7 +50,7 @@ class TemporaryCleanupTests(unittest.TestCase):
             (output/'catalog-courses.json').write_text(json.dumps({'courses':[course]}),encoding='utf-8')
             (output/'retry-pending-courses.json').write_text(json.dumps([course]),encoding='utf-8')
             with patch('sys.argv',['verify_downloads','--output',str(output)]),\
-                 patch('verify_downloads.inspect_file',return_value={'bytes':7}):
+                 patch('scripts.verify_downloads.inspect_file',return_value={'bytes':7}):
                 self.assertEqual(main(),2)
             summary=json.loads((output/'download-verification.json').read_text(encoding='utf-8'))
             self.assertIn('批次尚未结束',summary['errors'][0]['error'])

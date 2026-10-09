@@ -7,8 +7,8 @@ import argparse
 from pathlib import Path
 from urllib.parse import urlsplit, urlunsplit, unquote
 
-import common as settings
-from common import BASE, safe_name
+from . import common as settings
+from .common import BASE, safe_name
 
 
 def resource_kind(url, content_type):

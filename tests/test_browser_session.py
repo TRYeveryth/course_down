@@ -7,7 +7,7 @@ from pathlib import Path
 from types import SimpleNamespace
 from unittest.mock import AsyncMock, patch
 
-from common import browser_session, local_cdp_url
+from scripts.common import browser_session, local_cdp_url
 
 
 def fixture():
@@ -27,10 +27,10 @@ class BrowserOwnershipTests(unittest.IsolatedAsyncioTestCase):
     def setUp(self):
         temporary = tempfile.TemporaryDirectory()
         self.addCleanup(temporary.cleanup)
-        base_patcher = patch('common.BASE', Path(temporary.name))
+        base_patcher = patch('scripts.common.BASE', Path(temporary.name))
         base_patcher.start()
         self.addCleanup(base_patcher.stop)
-        patcher = patch('common.resolve_cdp_endpoint', side_effect=lambda endpoint: endpoint)
+        patcher = patch('scripts.common.resolve_cdp_endpoint', side_effect=lambda endpoint: endpoint)
         patcher.start()
         self.addCleanup(patcher.stop)
 

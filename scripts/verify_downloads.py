@@ -6,7 +6,7 @@ import shutil
 import subprocess
 from pathlib import Path
 
-from common import BASE
+from .common import BASE
 
 
 def file_digest(path):

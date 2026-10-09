@@ -4,7 +4,7 @@ $taskPython = Join-Path $projectDirectory '.venv/Scripts/python.exe'
 if (-not (Test-Path -LiteralPath $taskPython)) { $taskPython = 'python' }
 Push-Location $projectDirectory
 try {
-    $configuration = & $taskPython -c 'import json,common; print(json.dumps({"cdp":common.CDP_URL,"url":common.CATALOG_URL or common.COURSE_URL}))'
+    $configuration = & $taskPython -c 'import json; from scripts import common; print(json.dumps(dict(cdp=common.CDP_URL,url=common.CATALOG_URL or common.COURSE_URL)))'
     if ($LASTEXITCODE -ne 0) { throw '读取配置失败，请先安装 Python 并检查 config.py。' }
     $configuration = $configuration | ConvertFrom-Json
 } finally { Pop-Location }

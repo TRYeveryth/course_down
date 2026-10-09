@@ -3,7 +3,7 @@ import tempfile
 import unittest
 from pathlib import Path
 from unittest.mock import patch
-import common
+from scripts import common
 
 
 class ConfigurationTests(unittest.TestCase):
@@ -20,7 +20,7 @@ class ConfigurationTests(unittest.TestCase):
             common.validate_target('http://learning.example.test/kng/')
 
     def test_api_suffix_boundary_cannot_match_lookalike_host(self):
-        with patch('common.API_HOST_SUFFIXES',('example.test',)):
+        with patch('scripts.common.API_HOST_SUFFIXES',('example.test',)):
             self.assertTrue(common.is_api_url('https://api.example.test/kng/'))
             self.assertFalse(common.is_api_url('https://evilexample.test/kng/'))
 

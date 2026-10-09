@@ -9,7 +9,7 @@ import re
 import time
 import urllib.error
 import urllib.request
-import common as settings
+from . import common as settings
 from urllib.parse import unquote, urljoin, urlsplit, parse_qsl, urlencode, urlunsplit, quote
 
 

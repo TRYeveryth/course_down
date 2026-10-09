@@ -2,7 +2,7 @@ from tests.fixtures import SITE_URL, API_URL, CDN_URL
 """Parser and redirect credential-scope regressions."""
 import unittest
 import urllib.request
-from transfer import extract_download_urls, FileRedirects, file_identity, is_download_api_response
+from scripts.transfer import extract_download_urls, FileRedirects, file_identity, is_download_api_response
 
 
 class DownloadAPITests(unittest.TestCase):

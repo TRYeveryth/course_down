@@ -10,9 +10,9 @@ from types import SimpleNamespace
 from unittest.mock import AsyncMock, patch
 
 from playwright.async_api import async_playwright
-import download_catalog
-import download_official
-from common import course_key
+from scripts import download_catalog
+from scripts import download_official
+from scripts.common import course_key
 from tests.fixtures import CATALOG_URL as START_URL
 
 
@@ -199,9 +199,9 @@ class DirectoryTests(BrowserFixture):
         async def borrow(*args):
             yield session
         delegate = AsyncMock(return_value={'downloaded':0, 'skipped':6, 'failed':0})
-        with patch('download_catalog.BASE', Path(self.temporary.name)),\
-                patch('download_catalog.browser_session', side_effect=borrow) as sessions,\
-                patch('download_catalog.download_official.main', delegate):
+        with patch('scripts.download_catalog.BASE', Path(self.temporary.name)),\
+                patch('scripts.download_catalog.browser_session', side_effect=borrow) as sessions,\
+                patch('scripts.download_catalog.download_official.main', delegate):
             code = await download_catalog.main(['--yes'])
         self.assertEqual(code, 0)
         sessions.assert_called_once()
@@ -225,8 +225,8 @@ class SharedDownloaderTests(BrowserFixture):
                 path.write_bytes(b'\x00\x00\x00\x18ftypisomfixture')
         delegate=AsyncMock(return_value=Transfer())
         entry={'url':url,'id':identifier(1),'title':title,'standalone':True,'kind':'视频'}
-        with patch('download_official.BASE',Path(self.temporary.name)),\
-                patch('download_official.click_official_download',delegate):
+        with patch('scripts.download_official.BASE',Path(self.temporary.name)),\
+                patch('scripts.download_official.click_official_download',delegate):
             stats=await download_official.main(['--course-url',url,'--yes'],existing_session=session,course_entries=[entry])
         self.assertEqual(stats,{'downloaded':1,'skipped':0,'failed':0})
         self.assertEqual(delegate.await_args.args[2],'视频')
@@ -259,8 +259,8 @@ class SharedDownloaderTests(BrowserFixture):
             'course-16-error':{'status':'failed','course_url':url,'reason':'old timeout'},
             'course-1-error':{'status':'failed','course_url':player_url(2),'reason':'unrelated'}
         }),encoding='utf-8')
-        with patch('download_official.BASE', Path(self.temporary.name)),\
-                patch('download_official.click_official_download', AsyncMock(return_value=Transfer())):
+        with patch('scripts.download_official.BASE', Path(self.temporary.name)),\
+                patch('scripts.download_official.click_official_download', AsyncMock(return_value=Transfer())):
             stats = await download_official.main(['--course-url',url,'--yes'],
                                                   existing_session=session, course_entries=[entry])
         self.assertEqual(stats, {'downloaded':1,'skipped':0,'failed':0})
@@ -306,9 +306,9 @@ class SharedDownloaderTests(BrowserFixture):
         urls_file.write_text(player_url(1)+'\n'+player_url(2)+'\n', encoding='utf-8')
         session = SimpleNamespace(page=self.page, context=self.context, initial_url=player_url(1), attached=False)
         argv = ['--courses', str(urls_file), '--yes']
-        with patch('download_official.BASE', Path(self.temporary.name)),\
+        with patch('scripts.download_official.BASE', Path(self.temporary.name)),\
                 patch.object(self.page, 'goto', side_effect=goto),\
-                patch('download_official.click_official_download', side_effect=transfer),\
+                patch('scripts.download_official.click_official_download', side_effect=transfer),\
                 patch('playwright.async_api.async_playwright', side_effect=AssertionError('must reuse session')):
             first = await download_official.main(argv, existing_session=session)
             second = await download_official.main(argv, existing_session=session)

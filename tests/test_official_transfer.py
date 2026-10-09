@@ -12,7 +12,7 @@ from unittest.mock import patch
 from urllib.parse import urlsplit, parse_qs
 
 from playwright.async_api import async_playwright
-from transfer import click_official_download
+from scripts.transfer import click_official_download
 
 PDF = b'%PDF-1.4\n1 0 obj\n<< /Type /Catalog >>\nendobj\ntrailer\n<< /Root 1 0 R >>\n%%EOF\n'
 MP4 = b'\x00\x00\x00\x18ftypisom\x00\x00\x02\x00isommp42\x00\x00\x00\x08moov\x00\x00\x00\x08mdat'
@@ -118,7 +118,7 @@ class OfficialTransferTests(unittest.IsolatedAsyncioTestCase):
         return await click_official_download(self.page, control, kind, timeout, self.diagnostic)
 
     def local_api(self):
-        return patch('transfer.is_download_api_response',
+        return patch('scripts.transfer.is_download_api_response',
                      side_effect=lambda url: urlsplit(url).path == '/kng/knowledge/downloadurl')
 
     async def assert_saved(self, transfer):

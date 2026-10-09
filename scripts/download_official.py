@@ -12,10 +12,10 @@ import re
 from contextlib import AsyncExitStack
 from pathlib import Path
 
-from common import BASE, safe_name
-from common import browser_session, local_cdp_url, course_url, course_key
-from transfer import click_official_download
-import common as settings
+from .common import BASE, safe_name
+from .common import browser_session, local_cdp_url, course_url, course_key
+from .transfer import click_official_download
+from . import common as settings
 
 
 FOLDER_SUFFIX = settings.FOLDER_SUFFIX
@@ -430,7 +430,7 @@ async def main(argv=None, existing_session=None, course_entries=None):
 
 if __name__ == '__main__':
     try:
-        from common import download_run_lock
+        from .common import download_run_lock
         with download_run_lock(BASE/'output'):
             asyncio.run(main())
     except KeyboardInterrupt:

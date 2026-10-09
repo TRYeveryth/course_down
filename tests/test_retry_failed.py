@@ -5,8 +5,8 @@ import tempfile
 import unittest
 from pathlib import Path
 from unittest.mock import AsyncMock,patch
-import retry_failed
-from retry_failed import failed_courses
+from scripts import retry_failed
+from scripts.retry_failed import failed_courses
 
 
 class FailedSelectionTests(unittest.TestCase):
@@ -39,7 +39,7 @@ class RetryPendingTests(unittest.IsolatedAsyncioTestCase):
             (output/'retry-pending-courses.json').write_text(json.dumps([course]),encoding='utf-8')
             delegate=AsyncMock(return_value={'downloaded':2,'skipped':1,'failed':0})
             session=object()
-            with patch('retry_failed.BASE',root),patch('retry_failed.download_official.main',delegate):
+            with patch('scripts.retry_failed.BASE',root),patch('scripts.retry_failed.download_official.main',delegate):
                 self.assertEqual(await retry_failed.main([],existing_session=session),0)
             self.assertEqual(delegate.await_args.kwargs['course_entries'],[course])
             self.assertIs(delegate.await_args.kwargs['existing_session'],session)

@@ -3,7 +3,7 @@ from tests.fixtures import SITE_URL, API_URL, CDN_URL
 import unittest
 from playwright.async_api import async_playwright
 
-from download_official import chapters_on, course_outline, wait_selected
+from scripts.download_official import chapters_on, course_outline, wait_selected
 
 HTML = '''<!doctype html><html><head><style>
 body {margin:0} #outline {width:320px; height:600px; padding:12px; box-sizing:border-box}

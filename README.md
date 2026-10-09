@@ -11,16 +11,21 @@
 ```text
 course-tools/
 ├── config.example.py       # 用户配置模板：复制为 config.py 后填写
-├── common.py               # 配置、网址校验、浏览器连接、文件名处理和运行锁
-├── transfer.py             # 官方接口解析、浏览器下载和流式文件保存
-├── download_catalog.py     # 入口：遍历目录分页，依次下载课程
-├── download_official.py    # 入口：下载单个课程或指定课程清单
-├── retry_failed.py         # 入口：列出并重试失败课程
-├── probe.py                # 入口：交互式探测页面资源
-├── verify_downloads.py     # 入口：离线核验已保存文件
+├── courses.example.txt     # 用户课程清单模板
 ├── requirements.txt        # 下载依赖
 ├── requirements-verify.txt # 可选核验依赖；运行完整测试也需要安装
-├── scripts/                # Windows 环境和 Chrome 启动辅助脚本
+├── scripts/                # 所有运行代码及 Windows 辅助脚本
+│   ├── __init__.py         # Python 模块入口声明
+│   ├── download_catalog.py # 入口：遍历目录分页，依次下载课程
+│   ├── download_official.py # 入口：下载单个课程或指定课程清单
+│   ├── retry_failed.py     # 入口：列出并重试失败课程
+│   ├── verify_downloads.py # 入口：离线核验已保存文件
+│   ├── probe.py            # 入口：交互式探测页面资源
+│   ├── common.py           # 配置、网址校验、浏览器连接、文件名和运行锁
+│   ├── transfer.py         # 官方接口解析及文件保存
+│   ├── run.ps1             # Windows 统一运行入口
+│   ├── start_chrome_cdp.ps1
+│   └── start_chrome_cdp.cmd
 ├── tests/                  # 虚构网址、本地服务器和浏览器回归测试
 ├── .gitignore
 ├── LICENSE                 # MIT
@@ -28,6 +33,10 @@ course-tools/
 ```
 
 运行时生成的 `output/`、`.venv/`、`profile/`、`chrome-profile/`，以及用户填写的 `config.py`、`courses.txt` 均已加入 Git 忽略规则。测试中的 `.test` 域名属于虚构样例，不需要用户填写，也不会访问真实课程。
+
+`scripts/` 是实际功能代码，`tests/` 是回归测试代码。日常下载只运行 `scripts/` 中的入口；测试不负责下载用户的课程，也不是下载前必须执行的步骤。
+
+以下命令均在仓库根目录运行，使用 `python -m scripts.<模块名>`。配置文件及下载目录仍位于根目录，原先的 `python download_catalog.py` 等命令需改为新的模块命令。
 
 ## 1. 环境与依赖
 
@@ -39,7 +48,7 @@ course-tools/
 | Playwright ≥ 1.62，< 2 | 浏览器操作及 CDP 连接 | 必须 |
 | Requests ≥ 2.32，< 3 | 交互式资源探测的下载功能 | 安装基础依赖时包含 |
 | Google Chrome | 连接已有窗口；浏览器回归测试 | 推荐下载方式需要 |
-| Microsoft Edge | `probe.py` 和不使用 CDP 的单课程模式 | 使用这两种模式时需要 |
+| Microsoft Edge | `scripts/probe.py` 和不使用 CDP 的单课程模式 | 使用这两种模式时需要 |
 | pypdf、Pillow | PDF 可读性和图片完整性核验 | 核验及完整测试需要 |
 | ffprobe（通常随 FFmpeg 安装） | 视频轨和时长核验 | 核验 MP4 时需要 |
 
@@ -124,16 +133,16 @@ FOLDER_SUFFIX = "" # 留空使用运行当月 YY-MM；续传跨月时可填固�
 先检查课程清单：
 
 ```powershell
-python -u download_catalog.py --inspect-only
+python -u -m scripts.download_catalog --inspect-only
 ```
 
 确认识别的清单与网页一致后下载：
 
 ```powershell
-python -u download_catalog.py --yes
+python -u -m scripts.download_catalog --yes
 ```
 
-脚本会读取接口中的课程总数，点击“下一页”并等待列表变化，按页码、每页从左到右再从上到下的顺序采集课程。数量不一致时停止，不按残缺清单下载。采集完成后复用 `download_official.py`，依次进入课程，按左侧大纲下载全部章节；独立 PDF 和视频也由目录中的类型信息识别。
+脚本会读取接口中的课程总数，点击“下一页”并等待列表变化，按页码、每页从左到右再从上到下的顺序采集课程。数量不一致时停止，不按残缺清单下载。采集完成后复用 `scripts/download_official.py`，依次进入课程，按左侧大纲下载全部章节；独立 PDF 和视频也由目录中的类型信息识别。
 
 `--inspect-only` 不下载文件，但会打开页面并点击独立视频卡片以确认真实地址。临时探测标签页会关闭，原目录页保持当前页码。
 
@@ -152,7 +161,7 @@ python -u download_catalog.py --yes
 网络较慢时：
 
 ```powershell
-python -u download_catalog.py --yes --ready-timeout 120 --timeout 90
+python -u -m scripts.download_catalog --yes --ready-timeout 120 --timeout 90
 ```
 
 `--all-pages` 是兼容旧命令的参数，全部分页现在已经是默认行为。
@@ -162,8 +171,8 @@ python -u download_catalog.py --yes --ready-timeout 120 --timeout 90
 填写 `COURSE_URL` 后，先在新标签页检查大纲：
 
 ```powershell
-python -u download_official.py --cdp --inspect-only
-python -u download_official.py --cdp --yes
+python -u -m scripts.download_official --cdp --inspect-only
+python -u -m scripts.download_official --cdp --yes
 ```
 
 这里 `--cdp` 不带值时使用配置中的 `CDP_URL`。也可以传入本机地址，或使用 `--course-url` 指定另一个同站点的课程详情页。
@@ -172,7 +181,7 @@ python -u download_official.py --cdp --yes
 
 ```powershell
 Copy-Item courses.example.txt courses.txt
-python -u download_official.py --cdp --courses courses.txt --yes
+python -u -m scripts.download_official --cdp --courses courses.txt --yes
 ```
 
 清单模式保留文件中的顺序。单课程和手工清单模式用于有左侧大纲的课程详情页；独立 PDF / 视频请通过目录脚本处理，以获得文件类型等元数据。
@@ -184,8 +193,8 @@ python -u download_official.py --cdp --courses courses.txt --yes
 需要先保留批量下载生成的课程清单和下载记录：
 
 ```powershell
-python -u retry_failed.py --list-only
-python -u retry_failed.py
+python -u -m scripts.retry_failed --list-only
+python -u -m scripts.retry_failed
 ```
 
 脚本从失败记录匹配原目录课程，只重试相关课程。成功且文件大小一致的章节会跳过；首次失败后尚未处理的后续章节会继续下载。默认入口等待 120 秒，下载事件等待 90 秒，可用同名参数调整。
@@ -197,7 +206,7 @@ python -u retry_failed.py
 完成批量下载后，安装可选依赖并确保 `ffprobe` 在 `PATH` 中：
 
 ```powershell
-python -u verify_downloads.py
+python -u -m scripts.verify_downloads
 ```
 
 核验使用课程清单和下载记录，检查文件路径、记录大小、PDF 页面可读性、MP4 视频轨与有效时长、PNG/JPEG 图像结构，同时检查失败记录及未结束的重试批次。视频核验不进行逐帧解码。
@@ -205,7 +214,7 @@ python -u verify_downloads.py
 可通过 `--output` 指定另一个下载目录。只有核验全部通过时，以下命令才清理与正式文件大小和 SHA-256 均相同的浏览器临时副本：
 
 ```powershell
-python -u verify_downloads.py --cleanup-temp
+python -u -m scripts.verify_downloads --cleanup-temp
 ```
 
 正式文件和不匹配的临时文件会保留。核验依赖目录清单；仅使用单课程入口而未生成目录清单时，此工具不能核对完整目录。
@@ -213,7 +222,7 @@ python -u verify_downloads.py --cleanup-temp
 ## 8. 交互式资源探测
 
 ```powershell
-python -u probe.py
+python -u -m scripts.probe
 ```
 
 默认打开 `COURSE_URL`，未填写时使用 `CATALOG_URL`；也可通过 `--url` 指定。工具启动独立 Edge，在该窗口登录并人工打开资源。
@@ -230,7 +239,7 @@ python -u probe.py
 
 ## 保存位置与恢复行为
 
-默认保存到脚本所在仓库的 `output/`，不受终端当前目录影响：
+默认保存到仓库根目录的 `output/`，不会因 Python 脚本移入 `scripts/` 而改变：
 
 ```text
 output/
@@ -261,11 +270,25 @@ output/
 | 浏览器保存为空或停滞 | 使用当前版本的回退保存；查看 `last-download.json` 了解结果 |
 | 运行锁提示已有脚本 | 等待现有进程退出，锁会自动释放；仅删除锁文件不能解决同时运行的问题 |
 | 缺少 pypdf / Pillow / ffprobe | 安装核验依赖，并配置 ffprobe 的系统路径 |
-| 页面结构不同 | 使用 `probe.py` 保存样本，再调整目录、章节及下载入口定位 |
+| 页面结构不同 | 使用 `scripts/probe.py` 保存样本，再调整目录、章节及下载入口定位 |
 
-## 开发与测试
+## tests 文件夹的作用与开发验证
 
-内部依赖关系是：入口脚本 → `common.py` / `transfer.py`；目录和重试入口复用 `download_official.py`。公共逻辑已合并，不需要分别运行公共模块。
+测试使用虚构页面、本地文件和临时浏览器，验证代码修改后是否破坏已有功能：
+
+| 测试文件 | 验证内容 |
+|---|---|
+| `test_download_catalog.py` | 目录翻页、课程顺序、完整数量及不同课程类型 |
+| `test_chapter_scope.py`、`test_download_ready.py` | 区分课程大纲与推荐内容、章节切换及等待下载入口 |
+| `test_download_api.py`、`test_official_transfer.py` | 官方文件地址解析、PDF/视频/图片保存及空文件回退 |
+| `test_retry_failed.py` | 匹配失败课程、继续未完成的重试批次 |
+| `test_verify_downloads.py` | 文件核验及相同临时副本的清理条件 |
+| `test_config.py`、`test_browser_session.py`、`test_download_run_lock.py` | 配置校验、浏览器连接及防止重复运行 |
+| `test_project_layout.py` | 整理后的模块命令可启动，配置和下载路径仍在根目录 |
+
+`fixtures.py` 提供共用的虚构网址和测试配置；`__init__.py` 将测试目录声明为 Python 包。这些文件均不参与日常课程下载。
+
+内部依赖关系是：`scripts/` 中的入口模块 → `common.py` / `transfer.py`；目录和重试入口复用 `download_official.py`。公共模块不需要单独运行。
 
 ```powershell
 python -m pip install -r requirements.txt -r requirements-verify.txt

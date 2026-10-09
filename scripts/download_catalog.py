@@ -6,10 +6,10 @@ import re
 from contextlib import AsyncExitStack
 from urllib.parse import urlsplit, parse_qs, quote
 
-import download_official
-from common import browser_session, local_cdp_url, course_url, course_key, is_course_page
-from common import BASE
-import common as settings
+from . import download_official
+from .common import browser_session, local_cdp_url, course_url, course_key, is_course_page
+from .common import BASE
+from . import common as settings
 
 
 def catalog_url(value):
@@ -460,7 +460,7 @@ async def main(argv=None, existing_session=None):
 
 if __name__ == '__main__':
     try:
-        from common import download_run_lock
+        from .common import download_run_lock
         with download_run_lock(BASE/'output'):
             raise SystemExit(asyncio.run(main()))
     except KeyboardInterrupt:

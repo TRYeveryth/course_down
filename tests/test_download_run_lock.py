@@ -2,7 +2,7 @@ from tests.fixtures import SITE_URL, API_URL, CDN_URL
 import tempfile
 import unittest
 from pathlib import Path
-from common import download_run_lock
+from scripts.common import download_run_lock
 
 
 class DownloadRunLockTests(unittest.TestCase):
