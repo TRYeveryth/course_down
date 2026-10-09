@@ -1,3 +1,3 @@
-# Optional dependencies used by verify_downloads.py and its tests.
+# Optional dependencies used by scripts.verify_downloads.
 pypdf>=5,<7
 Pillow>=10,<13

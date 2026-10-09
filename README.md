@@ -13,7 +13,7 @@ course-tools/
 ├── config.example.py       # 用户配置模板：复制为 config.py 后填写
 ├── courses.example.txt     # 用户课程清单模板
 ├── requirements.txt        # 下载依赖
-├── requirements-verify.txt # 可选核验依赖；运行完整测试也需要安装
+├── requirements-verify.txt # 可选文件核验依赖
 ├── scripts/                # 所有运行代码及 Windows 辅助脚本
 │   ├── __init__.py         # Python 模块入口声明
 │   ├── download_catalog.py # 入口：遍历目录分页，依次下载课程
@@ -26,15 +26,14 @@ course-tools/
 │   ├── run.ps1             # Windows 统一运行入口
 │   ├── start_chrome_cdp.ps1
 │   └── start_chrome_cdp.cmd
-├── tests/                  # 虚构网址、本地服务器和浏览器回归测试
 ├── .gitignore
 ├── LICENSE                 # MIT
 └── README.md
 ```
 
-运行时生成的 `output/`、`.venv/`、`profile/`、`chrome-profile/`，以及用户填写的 `config.py`、`courses.txt` 均已加入 Git 忽略规则。测试中的 `.test` 域名属于虚构样例，不需要用户填写，也不会访问真实课程。
+运行时生成的 `output/`、`.venv/`、`profile/`、`chrome-profile/`，以及用户填写的 `config.py`、`courses.txt` 均已加入 Git 忽略规则。
 
-`scripts/` 是实际功能代码，`tests/` 是回归测试代码。日常下载只运行 `scripts/` 中的入口；测试不负责下载用户的课程，也不是下载前必须执行的步骤。
+所有运行代码位于 `scripts/`，日常下载使用其中的入口模块。
 
 以下命令均在仓库根目录运行，使用 `python -m scripts.<模块名>`。配置文件及下载目录仍位于根目录，原先的 `python download_catalog.py` 等命令需改为新的模块命令。
 
@@ -47,9 +46,9 @@ course-tools/
 | Python 3.11 或更新版本 | 运行脚本 | 必须 |
 | Playwright ≥ 1.62，< 2 | 浏览器操作及 CDP 连接 | 必须 |
 | Requests ≥ 2.32，< 3 | 交互式资源探测的下载功能 | 安装基础依赖时包含 |
-| Google Chrome | 连接已有窗口；浏览器回归测试 | 推荐下载方式需要 |
+| Google Chrome | 连接已有窗口 | 推荐下载方式需要 |
 | Microsoft Edge | `scripts/probe.py` 和不使用 CDP 的单课程模式 | 使用这两种模式时需要 |
-| pypdf、Pillow | PDF 可读性和图片完整性核验 | 核验及完整测试需要 |
+| pypdf、Pillow | PDF 可读性和图片完整性核验 | 核验需要 |
 | ffprobe（通常随 FFmpeg 安装） | 视频轨和时长核验 | 核验 MP4 时需要 |
 
 克隆或解压仓库后进入 `course-tools`，选择一种 Python 环境。
@@ -74,7 +73,7 @@ python -m pip install -r requirements.txt
 
 也可以直接使用 `.\.venv\Scripts\python.exe` 代替命令中的 `python`。
 
-核验下载内容或运行完整测试时，额外安装：
+核验下载内容时，额外安装：
 
 ```powershell
 python -m pip install -r requirements-verify.txt
@@ -272,30 +271,7 @@ output/
 | 缺少 pypdf / Pillow / ffprobe | 安装核验依赖，并配置 ffprobe 的系统路径 |
 | 页面结构不同 | 使用 `scripts/probe.py` 保存样本，再调整目录、章节及下载入口定位 |
 
-## tests 文件夹的作用与开发验证
-
-测试使用虚构页面、本地文件和临时浏览器，验证代码修改后是否破坏已有功能：
-
-| 测试文件 | 验证内容 |
-|---|---|
-| `test_download_catalog.py` | 目录翻页、课程顺序、完整数量及不同课程类型 |
-| `test_chapter_scope.py`、`test_download_ready.py` | 区分课程大纲与推荐内容、章节切换及等待下载入口 |
-| `test_download_api.py`、`test_official_transfer.py` | 官方文件地址解析、PDF/视频/图片保存及空文件回退 |
-| `test_retry_failed.py` | 匹配失败课程、继续未完成的重试批次 |
-| `test_verify_downloads.py` | 文件核验及相同临时副本的清理条件 |
-| `test_config.py`、`test_browser_session.py`、`test_download_run_lock.py` | 配置校验、浏览器连接及防止重复运行 |
-| `test_project_layout.py` | 整理后的模块命令可启动，配置和下载路径仍在根目录 |
-
-`fixtures.py` 提供共用的虚构网址和测试配置；`__init__.py` 将测试目录声明为 Python 包。这些文件均不参与日常课程下载。
-
-内部依赖关系是：`scripts/` 中的入口模块 → `common.py` / `transfer.py`；目录和重试入口复用 `download_official.py`。公共模块不需要单独运行。
-
-```powershell
-python -m pip install -r requirements.txt -r requirements-verify.txt
-python -m unittest discover -s tests -p "test_*.py"
-```
-
-浏览器场景测试需要本机安装 Chrome。测试使用临时目录、拦截页面和本地 HTTP 服务，不连接用户的调试服务，不需要真实课程配置，也不使用已有下载文件。
+## Windows 便捷入口
 
 Windows 另提供统一的便捷入口；它创建仓库内 `.venv` 并安装对应依赖：
 
