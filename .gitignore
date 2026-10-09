@@ -1,0 +1,16 @@
+.venv/
+profile/
+chrome-profile/
+output/
+__pycache__/
+*.py[cod]
+config.py
+courses.txt
+.env
+.env.*
+!.env.example
+.pytest_cache/
+.coverage
+htmlcov/
+.DS_Store
+Thumbs.db
